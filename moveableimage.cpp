@@ -50,19 +50,34 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/durchfall.mp3"));
-        audioOutput->setVolume(0.5);  // Adjust volume if needed
+        audioOutput->setVolume(0.5);
         player->play();
 
     } else if (type == "raumschiff1") {
         type = "AHHH";
         qDebug() << "Raumschiff1 image was clicked.";
+
+        player->setAudioOutput(audioOutput);
+        player->setSource(QUrl("qrc:/new/prefix1/UfoClick.mp3"));
+        audioOutput->setVolume(0.5);
+        player->play();
+
     } else if (type == "raumschiff2") {
         type = "AHHH";
         qDebug() << "Raumschiff2 image was clicked.";
+        player->setAudioOutput(audioOutput);
+        player->setSource(QUrl("qrc:/new/prefix1/UfoClick.mp3"));
+        audioOutput->setVolume(0.5);
+        player->play();
     } else if (type == "Lootbox") {
         type = "AHHH";
         qDebug() << "Lootbox image was clicked.";
-        // Randomly decide Positive or Negative
+
+        player->setAudioOutput(audioOutput);
+        player->setSource(QUrl("qrc:/new/prefix1/LootboxNotif.mp3"));
+        audioOutput->setVolume(0.5);
+        player->play();
+
         QString resultType = (QRandomGenerator::global()->bounded(2) == 0) ? "Positive" : "Negative";
         if (mainWindow) {
             mainWindow->showResult(resultType);

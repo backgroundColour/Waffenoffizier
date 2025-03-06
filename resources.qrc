@@ -14,6 +14,8 @@
         <file>Positive.png</file>
         <file>Bergmann.mp3</file>
         <file>durchfall.mp3</file>
+        <file>LootboxNotif.mp3</file>
+        <file>UfoClick.mp3</file>
     </qresource>
     <qresource prefix="/">
         <file>File.qml</file>
