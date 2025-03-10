@@ -3,10 +3,11 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPixmap>
 #include <QTimer>
-#include <QDebug>
 #include "QRandomGenerator"
 #include "mainwindow.h"
 #include "QtMultimedia"
+
+#define BAD_SHIP "raumschiff2"
 
 QMediaPlayer *player = new QMediaPlayer;
 QAudioOutput *audioOutput = new QAudioOutput;
@@ -28,6 +29,19 @@ void MovableImage::move() {
     // Check if the item is out of the scene (left side)
     if (x() + pixmap().width() < 0) {
         // Remove from the scene and delete the item
+
+        if (type == "meteor" || type == BAD_SHIP) {
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/MeteorPass.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+
+            // Shake the screen when a meteor disappears
+            if (mainWindow) {
+                mainWindow->shakeContent();
+            }
+        }
+
         scene()->removeItem(this);
         delete this;
     }
@@ -45,40 +59,45 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     // Check the type of image that was clicked
     if (type == "meteor") {
         type = "AHHH";
-        qDebug() << "Meteor image was clicked.";
-
 
         player->setAudioOutput(audioOutput);
-        player->setSource(QUrl("qrc:/new/prefix1/durchfall.mp3"));
+        player->setSource(QUrl("qrc:/new/prefix1/MeteorHit.mp3"));
         audioOutput->setVolume(0.5);
         player->play();
 
-    } else if (type == "raumschiff1") {
+    } else if (type != BAD_SHIP && (type == "raumschiff1" || type == "raumschiff2")) {
         type = "AHHH";
-        qDebug() << "Raumschiff1 image was clicked.";
+
+        mainWindow->shakeContent();
 
         player->setAudioOutput(audioOutput);
-        player->setSource(QUrl("qrc:/new/prefix1/UfoClick.mp3"));
-        audioOutput->setVolume(0.5);
+        player->setSource(QUrl("qrc:/new/prefix1/HitBad.mp3"));
+        audioOutput->setVolume(0.1);
         player->play();
 
-    } else if (type == "raumschiff2") {
+    } else if (type == BAD_SHIP) {
         type = "AHHH";
-        qDebug() << "Raumschiff2 image was clicked.";
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/UfoClick.mp3"));
         audioOutput->setVolume(0.5);
         player->play();
     } else if (type == "Lootbox") {
         type = "AHHH";
-        qDebug() << "Lootbox image was clicked.";
-
-        player->setAudioOutput(audioOutput);
-        player->setSource(QUrl("qrc:/new/prefix1/LootboxNotif.mp3"));
-        audioOutput->setVolume(0.5);
-        player->play();
 
         QString resultType = (QRandomGenerator::global()->bounded(2) == 0) ? "Positive" : "Negative";
+
+        if (resultType == "Positive"){
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/GoodNotif.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+        }else{
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/BadNotif.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+        }
+
         if (mainWindow) {
             mainWindow->showResult(resultType);
         }

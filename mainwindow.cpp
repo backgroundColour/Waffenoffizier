@@ -11,12 +11,13 @@
 #include <QUrl>
 #include <QLabel>
 #include <QTimer>
+#include <QPropertyAnimation> // Include QPropertyAnimation for shaking effect
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), line(nullptr), resultLabel(nullptr) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullptr), shakeAnimation(nullptr) {
     // Set the window to be borderless
     setWindowFlags(Qt::FramelessWindowHint);
 
-    QGraphicsView *view = new QGraphicsView(this);
+    view = new QGraphicsView(this); // Store the QGraphicsView in the class
 
     // Set scene to match window size
     QRect screenGeometry = QApplication::screens().at(0)->geometry();
@@ -36,9 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), line(nullptr), re
 
     // Load and set background image
     QPixmap backgroundPixmap(":/new/prefix1/Background.png");
-    if (backgroundPixmap.isNull()) {
-        qDebug() << "Failed to load background image!";
-    } else {
+    if (!backgroundPixmap.isNull()) {
         QGraphicsPixmapItem *background = new QGraphicsPixmapItem(backgroundPixmap.scaled(screenWidth, screenHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         scene->addItem(background);
         background->setZValue(-2); // Ensure background is behind other items
@@ -46,9 +45,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), line(nullptr), re
 
     // Load and set layer image
     QPixmap layerPixmap(":/new/prefix1/layer.png");
-    if (layerPixmap.isNull()) {
-        qDebug() << "Failed to load layer image!";
-    } else {
+    if (!layerPixmap.isNull()) {
         QGraphicsPixmapItem *layer = new QGraphicsPixmapItem(layerPixmap.scaled(screenWidth, screenHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         scene->addItem(layer);
         layer->setZValue(1); // Ensure layer is above other items
@@ -56,19 +53,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), line(nullptr), re
 
     // Load and set custom cursor
     QPixmap cursorPixmap(":/new/prefix1/cursor.png");
-    if (cursorPixmap.isNull()) {
-        qDebug() << "Failed to load cursor image!";
-    } else {
+    if (!cursorPixmap.isNull()) {
         int cursorSize = screenWidth / 15; // Increase size to make it larger
         cursorPixmap = cursorPixmap.scaled(cursorSize, cursorSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QCursor customCursor(cursorPixmap);
         setCursor(customCursor);
     }
-
-    // Create and add the line item
-    line = new QGraphicsLineItem();
-    scene->addItem(line);
-    line->setZValue(2); // Ensure line is above other items
 
     // Timer to spawn images every 2 seconds
     spawnTimer = new QTimer(this);
@@ -79,8 +69,35 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), line(nullptr), re
 MainWindow::~MainWindow() {
     delete scene;
     delete spawnTimer;
-    delete line;
     delete resultLabel;
+    delete shakeAnimation;
+}
+
+void MainWindow::shakeContent() {
+    if (!shakeAnimation) {
+        shakeAnimation = new QPropertyAnimation(view, "pos"); // Animate the QGraphicsView's position
+        shakeAnimation->setDuration(100); // Duration of the shake
+        shakeAnimation->setLoopCount(2); // Number of shakes
+    }
+
+    // Store the original position of the QGraphicsView
+    QPoint originalPos = view->pos();
+
+    // Define the shake animation keyframes
+    shakeAnimation->setKeyValueAt(0, originalPos);
+    shakeAnimation->setKeyValueAt(0.1, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.2, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.3, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.4, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.5, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.6, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.7, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.8, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.9, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(1, originalPos);
+
+    // Start the animation
+    shakeAnimation->start();
 }
 
 void MainWindow::spawnImage() {
@@ -104,7 +121,6 @@ void MainWindow::spawnImage() {
     }else{
         randomNumber = QRandomGenerator::global()->bounded(1, 101);
 
-        qDebug() << randomNumber;
 
         if (randomNumber < 65) {
             randomNumber = QRandomGenerator::global()->bounded(1, 101);
@@ -112,6 +128,7 @@ void MainWindow::spawnImage() {
             if (randomNumber < 50) {
                 pixmap = QPixmap(":/new/prefix1/Raumschiff1.png");
                 type = "raumschiff1";
+                shakeContent();
             }else{
                 pixmap = QPixmap(":/new/prefix1/Raumschiff2.png");
                 type = "raumschiff2";
@@ -123,7 +140,6 @@ void MainWindow::spawnImage() {
     }
 
     if (pixmap.isNull()) {
-        qDebug() << "Failed to load image from resource!";
         return;
     }
 
@@ -146,16 +162,6 @@ void MainWindow::spawnImage() {
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event) {
-    if (line) {
-        QRect screenGeometry = QApplication::screens().at(0)->geometry();
-        int screenWidth = screenGeometry.width();
-        int screenHeight = screenGeometry.height();
-
-        // Update the line to follow the cursor
-        QPointF cursorPosition = event->pos();
-        QLineF lineToCursor(screenWidth / 2, screenHeight, cursorPosition.x(), cursorPosition.y());
-        line->setLine(lineToCursor);
-    }
     QMainWindow::mouseMoveEvent(event);
 }
 
@@ -170,7 +176,6 @@ void MainWindow::showResult(const QString &resultType) {
     // Load the appropriate image
     QPixmap resultPixmap(resultType == "Positive" ? ":/new/prefix1/Positive.png" : ":/new/prefix1/Negative.png");
     if (resultPixmap.isNull()) {
-        qDebug() << "Failed to load result image!";
         return;
     }
 
@@ -220,4 +225,9 @@ void MainWindow::showResult(const QString &resultType) {
             resultLabel = nullptr;
         }
     });
+
+    // Shake the content if the result is negative
+    if (resultType == "Negative") {
+        shakeContent();
+    }
 }
