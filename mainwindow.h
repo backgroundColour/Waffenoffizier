@@ -14,22 +14,28 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void showResult(const QString &resultType); // Function to show Positive/Negative result
-    void shakeContent(); // Shake the content of the window (QGraphicsView)
+    void showResult(const QString &resultType);
+    void shakeContent();
+    void updateAmmoDisplay();
+    bool canShoot();
+    void fireEvent();
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
 
 private:
     QGraphicsScene *scene;
-    QGraphicsView *view; // Add a pointer to the QGraphicsView
+    QGraphicsView *view;
     QTimer *spawnTimer;
     QGraphicsLineItem *line;
     QMediaPlayer *backgroundMusic;
     QLabel *resultLabel;
-    QPropertyAnimation *shakeAnimation; // Animation for shaking effect
+    QPropertyAnimation *shakeAnimation;
+    QLabel *ammoLabel;
+    int ammo;
 
     void spawnImage();
 };
 
-#endif // MAINWINDOW_H
+#endif

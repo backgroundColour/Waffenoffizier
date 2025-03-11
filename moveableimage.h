@@ -1,11 +1,11 @@
 #ifndef MOVABLEIMAGE_H
 #define MOVABLEIMAGE_H
-#include "QPropertyAnimation"
 
+#include "QPropertyAnimation"
 #include <QGraphicsPixmapItem>
 #include <QTimer>
 
-class MainWindow; // Forward declaration
+class MainWindow;
 
 class MovableImage : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
@@ -25,8 +25,8 @@ private:
     int speed;
     int currentFrame;
     QPropertyAnimation *animation;
-    QString type; // Add a member to store the type of image
-    MainWindow *mainWindow; // Pointer to MainWindow for communication
+    QString type;
+    MainWindow *mainWindow;
 };
 
-#endif // MOVABLEIMAGE_H
+#endif

@@ -13,7 +13,8 @@
 #include <QTimer>
 #include <QPropertyAnimation> // Include QPropertyAnimation for shaking effect
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullptr), shakeAnimation(nullptr) {
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullptr), shakeAnimation(nullptr), ammo(50) {
     // Set the window to be borderless
     setWindowFlags(Qt::FramelessWindowHint);
 
@@ -64,6 +65,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullp
     spawnTimer = new QTimer(this);
     connect(spawnTimer, &QTimer::timeout, this, &MainWindow::spawnImage);
     spawnTimer->start(1000);
+
+    // Initialize ammo display
+    ammoLabel = new QLabel(this);
+    ammoLabel->setStyleSheet("QLabel { color : white; font-size: 60px; font-weight: 1000}");
+    updateAmmoDisplay();
+    ammoLabel->setGeometry(screenWidth - 450, screenHeight - 250, 400, 230); // Position in the bottom-right corner
+    ammoLabel->show();
 }
 
 MainWindow::~MainWindow() {
@@ -71,6 +79,29 @@ MainWindow::~MainWindow() {
     delete spawnTimer;
     delete resultLabel;
     delete shakeAnimation;
+    delete ammoLabel;
+}
+
+void MainWindow::updateAmmoDisplay() {
+    ammoLabel->setText("Munition " + QString::number(ammo));
+}
+
+bool MainWindow::canShoot() {
+    return ammo > 0;
+}
+
+void MainWindow::fireEvent() {
+    if (canShoot()) {
+        ammo--;
+        updateAmmoDisplay();
+
+    } else {
+        // Optionally, play a sound or show a message when out of ammo
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event) {
+    fireEvent();
 }
 
 void MainWindow::shakeContent() {
@@ -127,11 +158,10 @@ void MainWindow::spawnImage() {
 
             if (randomNumber < 50) {
                 pixmap = QPixmap(":/new/prefix1/Raumschiff1.png");
-                type = "raumschiff1";
-                shakeContent();
+                type = "BlueShip";
             }else{
                 pixmap = QPixmap(":/new/prefix1/Raumschiff2.png");
-                type = "raumschiff2";
+                type = "RedShip";
             }
         }else{
             pixmap = QPixmap(":/new/prefix1/Lootbox.png");
@@ -145,19 +175,17 @@ void MainWindow::spawnImage() {
 
     pixmap = pixmap.scaled(width, height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-    // Randomize vertical position and fix horizontal position to spawn off-screen
     int y = QRandomGenerator::global()->bounded(50, screenHeight - height - 50);
-    int x = screenWidth + 50; // Spawn off-screen to the right
+    int x = screenWidth + 50;
 
     MovableImage *img = new MovableImage(pixmap, x, y, type, this);
 
-    // Randomly rotate the image if it's not Raumschiff1 or Raumschiff2
-    if (type != "raumschiff1" && type != "raumschiff2") {
-        qreal rotationAngle = QRandomGenerator::global()->bounded(-45, 45); // Rotate between -45 and 45 degrees
+    if (type != "BlueShip" && type != "RedShip") {
+        qreal rotationAngle = QRandomGenerator::global()->bounded(-45, 45);
         img->setRotation(rotationAngle);
     }
 
-    img->setZValue(0); // Ensure meteors are below the layer
+    img->setZValue(0);
     scene->addItem(img);
 }
 
@@ -166,28 +194,23 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void MainWindow::showResult(const QString &resultType) {
-    // If a previous result is already displayed, remove it
     if (resultLabel) {
         resultLabel->hide();
         delete resultLabel;
         resultLabel = nullptr;
     }
 
-    // Load the appropriate image
     QPixmap resultPixmap(resultType == "Positive" ? ":/new/prefix1/Positive.png" : ":/new/prefix1/Negative.png");
     if (resultPixmap.isNull()) {
         return;
     }
 
-    // Create a new label to display the result
     resultLabel = new QLabel(this);
 
-    // Make the pixmap smaller
     resultPixmap = resultPixmap.scaled(200, 100, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation); // Smaller size
     QImage imageWithText(resultPixmap.size(), QImage::Format_ARGB32);
-    imageWithText.fill(Qt::transparent); // Transparent background for overlay
+    imageWithText.fill(Qt::transparent);
 
-    // Paint placeholder text on the image
     QPainter painter(&imageWithText);
     painter.drawPixmap(0, 0, resultPixmap);
     painter.setPen(Qt::white);
@@ -195,29 +218,24 @@ void MainWindow::showResult(const QString &resultType) {
     painter.drawText(imageWithText.rect(), Qt::AlignCenter, resultType); // Placeholder text in the middle
     painter.end();
 
-    // Set the image with text to the label
     resultLabel->setPixmap(QPixmap::fromImage(imageWithText));
     resultLabel->setAlignment(Qt::AlignCenter);
 
-    // Position the label in the bottom-left corner
     QRect screenGeometry = QApplication::screens().at(0)->geometry();
     resultLabel->setGeometry(
-        20,                             // 20px margin from the left edge
-        screenGeometry.height() - 120,  // 20px margin from the bottom edge
-        200,                            // Width of the label
-        100                             // Height of the label
+        20,
+        screenGeometry.height() - 120,
+        200,
+        100
         );
 
-    // Fix the cursor behavior
     resultLabel->setCursor(Qt::ArrowCursor);
 
-    // Make the label modal and block interactions with the underlying UI
     resultLabel->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     resultLabel->setAttribute(Qt::WA_ShowWithoutActivating, false); // Prevent clicks from passing through
     resultLabel->setStyleSheet("background: rgba(0, 0, 0, 0.7); border: 2px solid white;"); // Optional style for visibility
     resultLabel->show();
 
-    // Set a timer to hide the label after 2 seconds
     QTimer::singleShot(2000, [this]() {
         if (resultLabel) {
             resultLabel->hide();
@@ -226,7 +244,6 @@ void MainWindow::showResult(const QString &resultType) {
         }
     });
 
-    // Shake the content if the result is negative
     if (resultType == "Negative") {
         shakeContent();
     }

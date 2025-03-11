@@ -7,7 +7,7 @@
 #include "mainwindow.h"
 #include "QtMultimedia"
 
-#define BAD_SHIP "raumschiff2"
+#define BAD_SHIP "RedShip"
 
 QMediaPlayer *player = new QMediaPlayer;
 QAudioOutput *audioOutput = new QAudioOutput;
@@ -16,19 +16,15 @@ MovableImage::MovableImage(const QPixmap &pixmap, int startX, int startY, const 
     : QGraphicsPixmapItem(pixmap), speed(50), animation(nullptr), currentFrame(0), type(type), mainWindow(mainWindow) {
     setPos(startX, startY);
 
-    // Timer to move the image
     moveTimer = new QTimer(this);
     connect(moveTimer, &QTimer::timeout, this, &MovableImage::move);
-    moveTimer->start(50); // Adjust the interval to control movement smoothness
+    moveTimer->start(50);
 }
 
 void MovableImage::move() {
-    // Move the item left by "speed" pixels
     setPos(x() - speed, y());
 
-    // Check if the item is out of the scene (left side)
     if (x() + pixmap().width() < 0) {
-        // Remove from the scene and delete the item
 
         if (type == "meteor" || type == BAD_SHIP) {
             player->setAudioOutput(audioOutput);
@@ -36,7 +32,6 @@ void MovableImage::move() {
             audioOutput->setVolume(0.5);
             player->play();
 
-            // Shake the screen when a meteor disappears
             if (mainWindow) {
                 mainWindow->shakeContent();
             }
@@ -48,15 +43,24 @@ void MovableImage::move() {
 }
 
 void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    // Stop the movement
+
+    if (!mainWindow->canShoot()){
+
+        player->setAudioOutput(audioOutput);
+        player->setSource(QUrl("qrc:/new/prefix1/Empty.wav"));
+        audioOutput->setVolume(0.5);
+        player->play();
+
+        return;
+    }
+
+    mainWindow->fireEvent();
     if (moveTimer) {
         moveTimer->stop();
     }
 
-    // Play the animation
     playAnimation();
 
-    // Check the type of image that was clicked
     if (type == "meteor") {
         type = "AHHH";
 
@@ -65,7 +69,7 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         audioOutput->setVolume(0.5);
         player->play();
 
-    } else if (type != BAD_SHIP && (type == "raumschiff1" || type == "raumschiff2")) {
+    } else if (type != BAD_SHIP && (type == "BlueShip" || type == "RedShip")) {
         type = "AHHH";
 
         mainWindow->shakeContent();
