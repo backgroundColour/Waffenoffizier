@@ -5,12 +5,10 @@
 #include <QTimer>
 #include "QRandomGenerator"
 #include "mainwindow.h"
-#include "QtMultimedia"
+#include <QtMultimedia>
 
 #define BAD_SHIP "RedShip"
 
-QMediaPlayer *player = new QMediaPlayer;
-QAudioOutput *audioOutput = new QAudioOutput;
 
 MovableImage::MovableImage(const QPixmap &pixmap, int startX, int startY, const QString &type, MainWindow *mainWindow)
     : QGraphicsPixmapItem(pixmap), speed(50), animation(nullptr), currentFrame(0), type(type), mainWindow(mainWindow) {
@@ -47,7 +45,7 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (!mainWindow->canShoot()){
 
         player->setAudioOutput(audioOutput);
-        player->setSource(QUrl("qrc:/new/prefix1/Empty.wav"));
+        player->setSource(QUrl("qrc:/new/prefix1/Empty.mp3"));
         audioOutput->setVolume(0.5);
         player->play();
 
@@ -129,4 +127,12 @@ void MovableImage::playAnimation() {
         scene()->removeItem(this);
         delete this;
     }
+}
+
+void MovableImage::playEmptied()
+{
+    player->setAudioOutput(audioOutput);
+    player->setSource(QUrl("qrc:/new/prefix1/AmmoEmptied.mp3"));
+    audioOutput->setVolume(0.5);
+    player->play();
 }

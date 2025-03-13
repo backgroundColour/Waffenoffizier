@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QPropertyAnimation>
 #include "QGraphicsView"
+#include "qaudiooutput.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,6 +26,8 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    QMediaPlayer *player = new QMediaPlayer;
+    QAudioOutput *audioOutput = new QAudioOutput;
     QGraphicsScene *scene;
     QGraphicsView *view;
     QTimer *spawnTimer;

@@ -2,6 +2,8 @@
 #define MOVABLEIMAGE_H
 
 #include "QPropertyAnimation"
+#include "qaudiooutput.h"
+#include "qmediaplayer.h"
 #include <QGraphicsPixmapItem>
 #include <QTimer>
 
@@ -19,8 +21,12 @@ protected:
 private slots:
     void move();
     void playAnimation();
+    void playEmptied();
 
 private:
+
+    QMediaPlayer *player = new QMediaPlayer;
+    QAudioOutput *audioOutput = new QAudioOutput;
     QTimer *moveTimer;
     int speed;
     int currentFrame;

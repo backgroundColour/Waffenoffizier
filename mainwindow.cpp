@@ -12,6 +12,9 @@
 #include <QLabel>
 #include <QTimer>
 #include <QPropertyAnimation> // Include QPropertyAnimation for shaking effect
+#include <QtMultimedia>
+
+
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullptr), shakeAnimation(nullptr), ammo(50) {
@@ -84,6 +87,12 @@ MainWindow::~MainWindow() {
 
 void MainWindow::updateAmmoDisplay() {
     ammoLabel->setText("Munition " + QString::number(ammo));
+
+    if (ammo == 0) {
+        ammoLabel->setStyleSheet("QLabel { color : Red; font-size: 60px; font-weight: 1000}");
+    }else{
+        ammoLabel->setStyleSheet("QLabel { color : White; font-size: 60px; font-weight: 1000}");
+    }
 }
 
 bool MainWindow::canShoot() {
@@ -91,12 +100,26 @@ bool MainWindow::canShoot() {
 }
 
 void MainWindow::fireEvent() {
+
+    if (ammo == 0) {
+        player->setAudioOutput(audioOutput);
+        player->setSource(QUrl("qrc:/new/prefix1/Empty.mp3"));
+        audioOutput->setVolume(0.5);
+        player->play();
+    }
+
     if (canShoot()) {
         ammo--;
         updateAmmoDisplay();
 
-    } else {
-        // Optionally, play a sound or show a message when out of ammo
+        qDebug() << ammo;
+
+        if (ammo == 0) {
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/AmmoEmptied.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+        }
     }
 }
 
