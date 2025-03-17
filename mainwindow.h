@@ -8,18 +8,20 @@
 #include <QPropertyAnimation>
 #include "QGraphicsView"
 #include "qaudiooutput.h"
+#include <QTcpSocket>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(const QString &ipAddress, QWidget *parent = nullptr);
     ~MainWindow();
     void showResult(const QString &resultType);
     void shakeContent();
     void updateAmmoDisplay();
     bool canShoot();
     void fireEvent();
+
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
@@ -36,7 +38,9 @@ private:
     QLabel *resultLabel;
     QPropertyAnimation *shakeAnimation;
     QLabel *ammoLabel;
-    int ammo;
+    int ammo = 50;
+    QTcpSocket *tcpSocket;
+    QString ipAddress;
 
     void spawnImage();
 };

@@ -17,7 +17,19 @@
 
 
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), resultLabel(nullptr), shakeAnimation(nullptr), ammo(50) {
+MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
+    : QMainWindow(parent), ipAddress(ipAddress) {
+    tcpSocket = new QTcpSocket(this);
+    connect(tcpSocket, &QTcpSocket::connected, this, [this]() {
+        qDebug() << "Connected to server!";
+        QString message = "#role:WeaponsOfficer\r\n";
+        tcpSocket->write(message.toUtf8());
+    });
+    connect(tcpSocket, &QTcpSocket::errorOccurred, this, [](QAbstractSocket::SocketError socketError) {
+        qDebug() << "Error:" << socketError;
+    });
+
+    tcpSocket->connectToHost(ipAddress, 9999); // Portnummer anpassen
     // Set the window to be borderless
     setWindowFlags(Qt::FramelessWindowHint);
 
