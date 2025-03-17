@@ -14,9 +14,6 @@
 #include <QPropertyAnimation> // Include QPropertyAnimation for shaking effect
 #include <QtMultimedia>
 
-
-
-
 MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
     : QMainWindow(parent), ipAddress(ipAddress) {
     tcpSocket = new QTcpSocket(this);
@@ -25,6 +22,42 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
         QString message = "#role:WeaponsOfficer\r\n";
         tcpSocket->write(message.toUtf8());
     });
+
+    connect(tcpSocket, &QTcpSocket::readyRead, this, [this]() {
+        QByteArray receivedData = tcpSocket->readAll();
+        qDebug() << "Received data: " << receivedData;
+
+        // Hier kannst du die empfangenen Daten verarbeiten, z.B. in eine QString umwandeln
+        QString receivedMessage = QString::fromUtf8(receivedData);
+        qDebug() << "Received message: " << receivedMessage;
+
+        if (receivedMessage == "PositiveLootbox"){
+
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/GoodNotif.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+
+            showResult(receivedMessage);
+        }else if(receivedMessage == "NegativeLootbox"){
+
+            player->setAudioOutput(audioOutput);
+            player->setSource(QUrl("qrc:/new/prefix1/BadNotif.mp3"));
+            audioOutput->setVolume(0.5);
+            player->play();
+
+            showResult(receivedMessage);
+
+        }else if(receivedMessage.contains("#ammo:")){
+            int ammoIndex = receivedMessage.indexOf("#ammo:");
+            QString ammoValue = receivedMessage.mid(ammoIndex + 6).trimmed();
+            qDebug() << ammoValue;
+            updateAmmoDisplay();
+            ammo = ammoValue.toInt();
+        }
+    });
+
+
     connect(tcpSocket, &QTcpSocket::errorOccurred, this, [](QAbstractSocket::SocketError socketError) {
         qDebug() << "Error:" << socketError;
     });
@@ -118,14 +151,12 @@ void MainWindow::fireEvent() {
         player->setSource(QUrl("qrc:/new/prefix1/Empty.mp3"));
         audioOutput->setVolume(0.5);
         player->play();
+    }else{
+        writeMessage(QString("#shoot:none"));
     }
 
     if (canShoot()) {
-        ammo--;
         updateAmmoDisplay();
-
-        qDebug() << ammo;
-
         if (ammo == 0) {
             player->setAudioOutput(audioOutput);
             player->setSource(QUrl("qrc:/new/prefix1/AmmoEmptied.mp3"));
@@ -137,6 +168,10 @@ void MainWindow::fireEvent() {
 
 void MainWindow::mousePressEvent(QMouseEvent *event) {
     fireEvent();
+}
+
+void MainWindow::writeMessage(QString message) {
+    tcpSocket->write(message.toUtf8());
 }
 
 void MainWindow::shakeContent() {

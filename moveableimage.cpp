@@ -67,6 +67,7 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         audioOutput->setVolume(0.5);
         player->play();
 
+        mainWindow->writeMessage(QString("#shoot:meteor"));
     } else if (type != BAD_SHIP && (type == "BlueShip" || type == "RedShip")) {
         type = "AHHH";
 
@@ -76,33 +77,18 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         player->setSource(QUrl("qrc:/new/prefix1/HitBad.mp3"));
         audioOutput->setVolume(0.1);
         player->play();
-
+        mainWindow->writeMessage(QString("#shoot:GoodShip"));
     } else if (type == BAD_SHIP) {
         type = "AHHH";
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/UfoClick.mp3"));
         audioOutput->setVolume(0.5);
         player->play();
+        mainWindow->writeMessage(QString("#shoot:BadShip"));
     } else if (type == "Lootbox") {
         type = "AHHH";
 
-        QString resultType = (QRandomGenerator::global()->bounded(2) == 0) ? "Positive" : "Negative";
-
-        if (resultType == "Positive"){
-            player->setAudioOutput(audioOutput);
-            player->setSource(QUrl("qrc:/new/prefix1/GoodNotif.mp3"));
-            audioOutput->setVolume(0.5);
-            player->play();
-        }else{
-            player->setAudioOutput(audioOutput);
-            player->setSource(QUrl("qrc:/new/prefix1/BadNotif.mp3"));
-            audioOutput->setVolume(0.5);
-            player->play();
-        }
-
-        if (mainWindow) {
-            mainWindow->showResult(resultType);
-        }
+        mainWindow->writeMessage(QString("#shoot:Lootbox"));
     }
 }
 

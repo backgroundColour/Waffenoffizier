@@ -21,7 +21,7 @@ public:
     void updateAmmoDisplay();
     bool canShoot();
     void fireEvent();
-
+    void writeMessage(const QString message);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
