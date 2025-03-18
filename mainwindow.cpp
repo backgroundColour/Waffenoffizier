@@ -11,7 +11,7 @@
 #include <QUrl>
 #include <QLabel>
 #include <QTimer>
-#include <QPropertyAnimation> // Include QPropertyAnimation for shaking effect
+#include <QPropertyAnimation>
 #include <QtMultimedia>
 
 MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
@@ -27,7 +27,6 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
         QByteArray receivedData = tcpSocket->readAll();
         qDebug() << "Received data: " << receivedData;
 
-        // Hier kannst du die empfangenen Daten verarbeiten, z.B. in eine QString umwandeln
         QString receivedMessage = QString::fromUtf8(receivedData);
         qDebug() << "Received message: " << receivedMessage;
 
@@ -62,13 +61,11 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
         qDebug() << "Error:" << socketError;
     });
 
-    tcpSocket->connectToHost(ipAddress, 9999); // Portnummer anpassen
-    // Set the window to be borderless
+    tcpSocket->connectToHost(ipAddress, 9999);
     setWindowFlags(Qt::FramelessWindowHint);
 
-    view = new QGraphicsView(this); // Store the QGraphicsView in the class
+    view = new QGraphicsView(this);
 
-    // Set scene to match window size
     QRect screenGeometry = QApplication::screens().at(0)->geometry();
     int screenWidth = screenGeometry.width();
     int screenHeight = screenGeometry.height();
@@ -77,44 +74,37 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
     view->setScene(scene);
     setCentralWidget(view);
 
-    // Disable scroll bars
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    // Maximize the window
     showMaximized();
 
-    // Load and set background image
     QPixmap backgroundPixmap(":/new/prefix1/Background.png");
     if (!backgroundPixmap.isNull()) {
         QGraphicsPixmapItem *background = new QGraphicsPixmapItem(backgroundPixmap.scaled(screenWidth, screenHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         scene->addItem(background);
-        background->setZValue(-2); // Ensure background is behind other items
+        background->setZValue(-2);
     }
 
-    // Load and set layer image
     QPixmap layerPixmap(":/new/prefix1/layer.png");
     if (!layerPixmap.isNull()) {
         QGraphicsPixmapItem *layer = new QGraphicsPixmapItem(layerPixmap.scaled(screenWidth, screenHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
         scene->addItem(layer);
-        layer->setZValue(1); // Ensure layer is above other items
+        layer->setZValue(1);
     }
 
-    // Load and set custom cursor
     QPixmap cursorPixmap(":/new/prefix1/cursor.png");
     if (!cursorPixmap.isNull()) {
-        int cursorSize = screenWidth / 15; // Increase size to make it larger
+        int cursorSize = screenWidth / 15;
         cursorPixmap = cursorPixmap.scaled(cursorSize, cursorSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QCursor customCursor(cursorPixmap);
         setCursor(customCursor);
     }
 
-    // Timer to spawn images every 2 seconds
     spawnTimer = new QTimer(this);
     connect(spawnTimer, &QTimer::timeout, this, &MainWindow::spawnImage);
     spawnTimer->start(1000);
 
-    // Initialize ammo display
     ammoLabel = new QLabel(this);
     ammoLabel->setStyleSheet("QLabel { color : white; font-size: 60px; font-weight: 1000}");
     updateAmmoDisplay();
@@ -176,15 +166,13 @@ void MainWindow::writeMessage(QString message) {
 
 void MainWindow::shakeContent() {
     if (!shakeAnimation) {
-        shakeAnimation = new QPropertyAnimation(view, "pos"); // Animate the QGraphicsView's position
-        shakeAnimation->setDuration(100); // Duration of the shake
-        shakeAnimation->setLoopCount(2); // Number of shakes
+        shakeAnimation = new QPropertyAnimation(view, "pos");
+        shakeAnimation->setDuration(100);
+        shakeAnimation->setLoopCount(2);
     }
 
-    // Store the original position of the QGraphicsView
     QPoint originalPos = view->pos();
 
-    // Define the shake animation keyframes
     shakeAnimation->setKeyValueAt(0, originalPos);
     shakeAnimation->setKeyValueAt(0.1, originalPos + QPoint(-10, 0));
     shakeAnimation->setKeyValueAt(0.2, originalPos + QPoint(10, 0));
@@ -197,21 +185,17 @@ void MainWindow::shakeContent() {
     shakeAnimation->setKeyValueAt(0.9, originalPos + QPoint(-10, 0));
     shakeAnimation->setKeyValueAt(1, originalPos);
 
-    // Start the animation
     shakeAnimation->start();
 }
 
 void MainWindow::spawnImage() {
-    // Get screen resolution
     QRect screenGeometry = QApplication::screens().at(0)->geometry();
     int screenWidth = screenGeometry.width();
     int screenHeight = screenGeometry.height();
 
-    // Randomize image size
     int width = QRandomGenerator::global()->bounded(screenWidth / 10, screenWidth / 5);
     int height = QRandomGenerator::global()->bounded(screenHeight / 10, screenHeight / 5);
 
-    // Load and scale the image
     int randomNumber = QRandomGenerator::global()->bounded(1, 101);
     QPixmap pixmap;
     QString type;
@@ -277,15 +261,15 @@ void MainWindow::showResult(const QString &resultType) {
 
     resultLabel = new QLabel(this);
 
-    resultPixmap = resultPixmap.scaled(200, 100, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation); // Smaller size
+    resultPixmap = resultPixmap.scaled(200, 100, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QImage imageWithText(resultPixmap.size(), QImage::Format_ARGB32);
     imageWithText.fill(Qt::transparent);
 
     QPainter painter(&imageWithText);
     painter.drawPixmap(0, 0, resultPixmap);
     painter.setPen(Qt::white);
-    painter.setFont(QFont("Arial", 16, QFont::Bold)); // Smaller font for smaller box
-    painter.drawText(imageWithText.rect(), Qt::AlignCenter, resultType); // Placeholder text in the middle
+    painter.setFont(QFont("Arial", 16, QFont::Bold));
+    painter.drawText(imageWithText.rect(), Qt::AlignCenter, resultType);
     painter.end();
 
     resultLabel->setPixmap(QPixmap::fromImage(imageWithText));

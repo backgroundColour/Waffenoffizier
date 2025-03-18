@@ -33,6 +33,7 @@ private:
     QPropertyAnimation *animation;
     QString type;
     MainWindow *mainWindow;
+
 };
 
 #endif

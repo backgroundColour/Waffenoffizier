@@ -98,18 +98,16 @@ void MovableImage::playAnimation() {
     if (currentFrame < frames.size()) {
         QPixmap framePixmap(frames[currentFrame]);
         if (!framePixmap.isNull()) {
-            framePixmap = framePixmap.scaled(pixmap().size(), Qt::KeepAspectRatio, Qt::SmoothTransformation); // Ensure the frame is scaled properly
+            framePixmap = framePixmap.scaled(pixmap().size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
             setPixmap(framePixmap);
 
-            // Center the animation image on the original position
             QPointF currentPosition = pos();
             QPointF centerOffset((pixmap().width() - framePixmap.width()) / 2, (pixmap().height() - framePixmap.height()) / 2);
             setPos(currentPosition + centerOffset);
         }
         currentFrame++;
-        QTimer::singleShot(100, this, &MovableImage::playAnimation); // Play next frame after 200 ms
+        QTimer::singleShot(100, this, &MovableImage::playAnimation);
     } else {
-        // Animation complete, remove the item
         scene()->removeItem(this);
         delete this;
     }
