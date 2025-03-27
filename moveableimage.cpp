@@ -52,13 +52,13 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         return;
     }
 
+
     mainWindow->fireEvent();
     if (moveTimer) {
         moveTimer->stop();
     }
 
     playAnimation();
-
     if (type == "meteor") {
         type = "AHHH";
 
@@ -68,16 +68,18 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         player->play();
 
         mainWindow->writeMessage(QString("#shoot:meteor"));
+
     } else if (type != BAD_SHIP && (type == "BlueShip" || type == "RedShip")) {
         type = "AHHH";
 
-        mainWindow->shakeContent();
+        //mainWindow->shakeContent();
 
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/HitBad.mp3"));
         audioOutput->setVolume(0.1);
         player->play();
         mainWindow->writeMessage(QString("#shoot:GoodShip"));
+
     } else if (type == BAD_SHIP) {
         type = "AHHH";
         player->setAudioOutput(audioOutput);

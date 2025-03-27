@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QPropertyAnimation>
 #include <QtMultimedia>
+#include "QGraphicsOpacityEffect"
 
 MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
     : QMainWindow(parent), ipAddress(ipAddress) {
@@ -22,6 +23,10 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
         QString message = "#role:WeaponsOfficer\r\n";
         tcpSocket->write(message.toUtf8());
     });
+
+    QTimer *starSpawnTimer = new QTimer(this);
+    connect(starSpawnTimer, &QTimer::timeout, this, &MainWindow::spawnStar);
+    starSpawnTimer->start(800); // Spawn a star every 800ms
 
     connect(tcpSocket, &QTcpSocket::readyRead, this, [this]() {
         QByteArray receivedData = tcpSocket->readAll();
@@ -118,6 +123,58 @@ MainWindow::~MainWindow() {
     delete resultLabel;
     delete shakeAnimation;
     delete ammoLabel;
+}
+
+void MainWindow::spawnStar() {
+    QRect screenGeometry = QApplication::screens().at(0)->geometry();
+    int screenWidth = screenGeometry.width();
+    int screenHeight = screenGeometry.height();
+
+    QPixmap starPixmap(":/new/prefix1/Star.png");
+    if (starPixmap.isNull()) {
+        return;
+    }
+
+    int size = QRandomGenerator::global()->bounded(20, 50);
+    starPixmap = starPixmap.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    int x = QRandomGenerator::global()->bounded(0, screenWidth - size);
+    int y = QRandomGenerator::global()->bounded(0, screenHeight - size);
+
+    QGraphicsPixmapItem *star = new QGraphicsPixmapItem(starPixmap);
+    star->setPos(x, y);
+    star->setZValue(-1);
+    scene->addItem(star);
+    stars.append(star);
+
+    QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect(this);
+    star->setGraphicsEffect(opacityEffect);
+
+    QPropertyAnimation *fadeIn = new QPropertyAnimation(opacityEffect, "opacity");
+    fadeIn->setDuration(QRandomGenerator::global()->bounded(1000, 3000));
+    fadeIn->setStartValue(0);
+    fadeIn->setEndValue(QRandomGenerator::global()->bounded(5, 10) / 10.0); // Random opacity between 0.5 and 1.0
+
+    // Fade out animation after delay
+    QPropertyAnimation *fadeOut = new QPropertyAnimation(opacityEffect, "opacity");
+    fadeOut->setDuration(QRandomGenerator::global()->bounded(1000, 3000));
+    fadeOut->setStartValue(fadeIn->endValue());
+    fadeOut->setEndValue(0);
+
+    // Sequential animation group
+    QSequentialAnimationGroup *animationGroup = new QSequentialAnimationGroup(this);
+    animationGroup->addAnimation(fadeIn);
+    animationGroup->addPause(QRandomGenerator::global()->bounded(2000, 5000)); // Stay visible for random time
+    animationGroup->addAnimation(fadeOut);
+
+    // Remove star when animation finishes
+    connect(animationGroup, &QSequentialAnimationGroup::finished, [this, star]() {
+        scene->removeItem(star);
+        stars.removeOne(star);
+        delete star;
+    });
+
+    animationGroup->start();
 }
 
 void MainWindow::updateAmmoDisplay() {

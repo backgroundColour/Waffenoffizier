@@ -41,7 +41,9 @@ private:
     int ammo = 50;
     QTcpSocket *tcpSocket;
     QString ipAddress;
+    QList<QGraphicsPixmapItem*> stars;
 
+    void spawnStar();
     void spawnImage();
 };
 
