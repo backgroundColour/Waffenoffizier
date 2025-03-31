@@ -23,6 +23,9 @@ public:
     void fireEvent();
     void writeMessage(const QString message);
 
+    int getCanFire() const;
+    void setCanFire(int newCanFire);
+
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
@@ -38,13 +41,15 @@ private:
     QLabel *resultLabel;
     QPropertyAnimation *shakeAnimation;
     QLabel *ammoLabel;
-    int ammo = 50;
     QTcpSocket *tcpSocket;
     QString ipAddress;
     QList<QGraphicsPixmapItem*> stars;
 
     void spawnStar();
     void spawnImage();
+
+    int ammo = 50;
+    int canFire = 1;
 };
 
 #endif

@@ -72,7 +72,7 @@ void MovableImage::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (type != BAD_SHIP && (type == "BlueShip" || type == "RedShip")) {
         type = "AHHH";
 
-        //mainWindow->shakeContent();
+        mainWindow->shakeContent();
 
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/HitBad.mp3"));

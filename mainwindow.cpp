@@ -14,6 +14,7 @@
 #include <QPropertyAnimation>
 #include <QtMultimedia>
 #include "QGraphicsOpacityEffect"
+#include <QParallelAnimationGroup>
 
 MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
     : QMainWindow(parent), ipAddress(ipAddress) {
@@ -23,6 +24,12 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
         QString message = "#role:WeaponsOfficer\r\n";
         tcpSocket->write(message.toUtf8());
     });
+
+    player->setAudioOutput(audioOutput);
+    player->setSource(QUrl("qrc:/new/prefix1/Musik.mp3"));
+    audioOutput->setVolume(0.1);
+    player->play();
+
 
     QTimer *starSpawnTimer = new QTimer(this);
     connect(starSpawnTimer, &QTimer::timeout, this, &MainWindow::spawnStar);
@@ -58,6 +65,12 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
             qDebug() << ammoValue;
             updateAmmoDisplay();
             ammo = ammoValue.toInt();
+        }else if(receivedMessage.contains("#weapon:")){
+            if(receivedMessage.contains("#weapon:true")){
+                canFire = 1;
+            }else{
+                canFire = 0;
+            }
         }
     });
 
@@ -188,12 +201,17 @@ void MainWindow::updateAmmoDisplay() {
 }
 
 bool MainWindow::canShoot() {
+
+    if (canFire == 0) {
+        return false;
+    }
+
     return ammo > 0;
 }
 
 void MainWindow::fireEvent() {
 
-    if (ammo == 0) {
+    if (ammo == 0 || canFire == 0) {
         player->setAudioOutput(audioOutput);
         player->setSource(QUrl("qrc:/new/prefix1/Empty.mp3"));
         audioOutput->setVolume(0.5);
@@ -221,29 +239,49 @@ void MainWindow::writeMessage(QString message) {
     tcpSocket->write(message.toUtf8());
 }
 
+
+
 void MainWindow::shakeContent() {
-    if (!shakeAnimation) {
-        shakeAnimation = new QPropertyAnimation(view, "pos");
-        shakeAnimation->setDuration(100);
-        shakeAnimation->setLoopCount(2);
-    }
+    QPoint originalPos = pos();
 
-    QPoint originalPos = view->pos();
+    // Create animation group
+    QParallelAnimationGroup *shakeGroup = new QParallelAnimationGroup(this);
 
-    shakeAnimation->setKeyValueAt(0, originalPos);
-    shakeAnimation->setKeyValueAt(0.1, originalPos + QPoint(-10, 0));
-    shakeAnimation->setKeyValueAt(0.2, originalPos + QPoint(10, 0));
-    shakeAnimation->setKeyValueAt(0.3, originalPos + QPoint(-10, 0));
-    shakeAnimation->setKeyValueAt(0.4, originalPos + QPoint(10, 0));
-    shakeAnimation->setKeyValueAt(0.5, originalPos + QPoint(-10, 0));
-    shakeAnimation->setKeyValueAt(0.6, originalPos + QPoint(10, 0));
-    shakeAnimation->setKeyValueAt(0.7, originalPos + QPoint(-10, 0));
-    shakeAnimation->setKeyValueAt(0.8, originalPos + QPoint(10, 0));
-    shakeAnimation->setKeyValueAt(0.9, originalPos + QPoint(-10, 0));
-    shakeAnimation->setKeyValueAt(1, originalPos);
+    QPropertyAnimation *xAnim = new QPropertyAnimation(this, "pos");
+    xAnim->setDuration(1000); // 1 second
+    xAnim->setKeyValueAt(0, originalPos);
+    xAnim->setKeyValueAt(0.1, originalPos + QPoint(10, 0));
+    xAnim->setKeyValueAt(0.2, originalPos + QPoint(-15, 0));
+    xAnim->setKeyValueAt(0.3, originalPos + QPoint(20, 0));
+    xAnim->setKeyValueAt(0.4, originalPos + QPoint(-15, 0));
+    xAnim->setKeyValueAt(0.5, originalPos + QPoint(10, 0));
+    xAnim->setKeyValueAt(0.6, originalPos + QPoint(-10, 0));
+    xAnim->setKeyValueAt(0.7, originalPos + QPoint(5, 0));
+    xAnim->setKeyValueAt(0.8, originalPos + QPoint(-5, 0));
+    xAnim->setKeyValueAt(0.9, originalPos + QPoint(2, 0));
+    xAnim->setKeyValueAt(1, originalPos);
 
-    shakeAnimation->start();
+    QPropertyAnimation *yAnim = new QPropertyAnimation(this, "pos");
+    yAnim->setDuration(1000);
+    yAnim->setKeyValueAt(0, originalPos);
+    yAnim->setKeyValueAt(0.1, originalPos + QPoint(0, -5));
+    yAnim->setKeyValueAt(0.2, originalPos + QPoint(0, 10));
+    yAnim->setKeyValueAt(0.3, originalPos + QPoint(0, -7));
+    yAnim->setKeyValueAt(0.4, originalPos + QPoint(0, 5));
+    yAnim->setKeyValueAt(0.5, originalPos + QPoint(0, -3));
+    yAnim->setKeyValueAt(0.6, originalPos + QPoint(0, 2));
+    yAnim->setKeyValueAt(1, originalPos);
+
+    shakeGroup->addAnimation(xAnim);
+    shakeGroup->addAnimation(yAnim);
+
+    shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
+
+    QTimer::singleShot(1000, this, [this, originalPos]() {
+        move(originalPos);
+    });
 }
+
 
 void MainWindow::spawnImage() {
     QRect screenGeometry = QApplication::screens().at(0)->geometry();
