@@ -241,46 +241,43 @@ void MainWindow::writeMessage(QString message) {
 
 
 
-void MainWindow::shakeContent() {
-    QPoint originalPos = pos();
 
-    // Create animation group
+void MainWindow::shakeContent() {
+    QPoint originalPos = frameGeometry().topLeft();
+
     QParallelAnimationGroup *shakeGroup = new QParallelAnimationGroup(this);
 
-    QPropertyAnimation *xAnim = new QPropertyAnimation(this, "pos");
-    xAnim->setDuration(1000); // 1 second
-    xAnim->setKeyValueAt(0, originalPos);
-    xAnim->setKeyValueAt(0.1, originalPos + QPoint(10, 0));
-    xAnim->setKeyValueAt(0.2, originalPos + QPoint(-15, 0));
-    xAnim->setKeyValueAt(0.3, originalPos + QPoint(20, 0));
-    xAnim->setKeyValueAt(0.4, originalPos + QPoint(-15, 0));
-    xAnim->setKeyValueAt(0.5, originalPos + QPoint(10, 0));
-    xAnim->setKeyValueAt(0.6, originalPos + QPoint(-10, 0));
-    xAnim->setKeyValueAt(0.7, originalPos + QPoint(5, 0));
-    xAnim->setKeyValueAt(0.8, originalPos + QPoint(-5, 0));
-    xAnim->setKeyValueAt(0.9, originalPos + QPoint(2, 0));
-    xAnim->setKeyValueAt(1, originalPos);
+    QPropertyAnimation *xAnim = new QPropertyAnimation(this, "geometry");
+    xAnim->setDuration(500);
+    xAnim->setKeyValueAt(0.1, QRect(originalPos + QPoint(10, 0), size()));
+    xAnim->setKeyValueAt(0.2, QRect(originalPos + QPoint(-10, 0), size()));
+    xAnim->setKeyValueAt(0.3, QRect(originalPos + QPoint(5, 0), size()));
+    xAnim->setKeyValueAt(0.4, QRect(originalPos + QPoint(-5, 0), size()));
+    xAnim->setEndValue(QRect(originalPos, size()));
 
-    QPropertyAnimation *yAnim = new QPropertyAnimation(this, "pos");
-    yAnim->setDuration(1000);
-    yAnim->setKeyValueAt(0, originalPos);
-    yAnim->setKeyValueAt(0.1, originalPos + QPoint(0, -5));
-    yAnim->setKeyValueAt(0.2, originalPos + QPoint(0, 10));
-    yAnim->setKeyValueAt(0.3, originalPos + QPoint(0, -7));
-    yAnim->setKeyValueAt(0.4, originalPos + QPoint(0, 5));
-    yAnim->setKeyValueAt(0.5, originalPos + QPoint(0, -3));
-    yAnim->setKeyValueAt(0.6, originalPos + QPoint(0, 2));
-    yAnim->setKeyValueAt(1, originalPos);
+    QPropertyAnimation *yAnim = new QPropertyAnimation(this, "geometry");
+    yAnim->setDuration(500);
+    yAnim->setKeyValueAt(0.1, QRect(originalPos + QPoint(0, -5), size()));
+    yAnim->setKeyValueAt(0.2, QRect(originalPos + QPoint(0, 5), size()));
+    yAnim->setKeyValueAt(0.3, QRect(originalPos + QPoint(0, -3), size()));
+    yAnim->setKeyValueAt(0.4, QRect(originalPos + QPoint(0, 3), size()));
+    yAnim->setEndValue(QRect(originalPos, size()));
 
     shakeGroup->addAnimation(xAnim);
     shakeGroup->addAnimation(yAnim);
 
-    shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
-
-    QTimer::singleShot(1000, this, [this, originalPos]() {
+    connect(shakeGroup, &QParallelAnimationGroup::finished, this, [this, originalPos]() {
+        qDebug() << "Animation finished, resetting to original position.";
         move(originalPos);
     });
+
+    shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
+    qDebug() << "Shake animation started!";
 }
+
+
+
+
 
 
 void MainWindow::spawnImage() {
