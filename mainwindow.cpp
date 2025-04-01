@@ -168,19 +168,16 @@ void MainWindow::spawnStar() {
     fadeIn->setStartValue(0);
     fadeIn->setEndValue(QRandomGenerator::global()->bounded(5, 10) / 10.0); // Random opacity between 0.5 and 1.0
 
-    // Fade out animation after delay
     QPropertyAnimation *fadeOut = new QPropertyAnimation(opacityEffect, "opacity");
     fadeOut->setDuration(QRandomGenerator::global()->bounded(1000, 3000));
     fadeOut->setStartValue(fadeIn->endValue());
     fadeOut->setEndValue(0);
 
-    // Sequential animation group
     QSequentialAnimationGroup *animationGroup = new QSequentialAnimationGroup(this);
     animationGroup->addAnimation(fadeIn);
     animationGroup->addPause(QRandomGenerator::global()->bounded(2000, 5000)); // Stay visible for random time
     animationGroup->addAnimation(fadeOut);
 
-    // Remove star when animation finishes
     connect(animationGroup, &QSequentialAnimationGroup::finished, [this, star]() {
         scene->removeItem(star);
         stars.removeOne(star);
@@ -239,9 +236,6 @@ void MainWindow::writeMessage(QString message) {
     tcpSocket->write(message.toUtf8());
 }
 
-
-
-
 void MainWindow::shakeContent() {
     QPoint originalPos = frameGeometry().topLeft();
 
@@ -272,10 +266,6 @@ void MainWindow::shakeContent() {
 
     shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
 }
-
-
-
-
 
 
 void MainWindow::spawnImage() {
@@ -376,8 +366,8 @@ void MainWindow::showResult(const QString &resultType) {
     resultLabel->setCursor(Qt::ArrowCursor);
 
     resultLabel->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    resultLabel->setAttribute(Qt::WA_ShowWithoutActivating, false); // Prevent clicks from passing through
-    resultLabel->setStyleSheet("background: rgba(0, 0, 0, 0.7); border: 2px solid white;"); // Optional style for visibility
+    resultLabel->setAttribute(Qt::WA_ShowWithoutActivating, false);
+    resultLabel->setStyleSheet("background: rgba(0, 0, 0, 0.7); border: 2px solid white;");
     resultLabel->show();
 
     QTimer::singleShot(2000, [this]() {
