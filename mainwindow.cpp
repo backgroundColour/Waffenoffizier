@@ -267,12 +267,10 @@ void MainWindow::shakeContent() {
     shakeGroup->addAnimation(yAnim);
 
     connect(shakeGroup, &QParallelAnimationGroup::finished, this, [this, originalPos]() {
-        qDebug() << "Animation finished, resetting to original position.";
         move(originalPos);
     });
 
     shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
-    qDebug() << "Shake animation started!";
 }
 
 
