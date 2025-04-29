@@ -39,7 +39,7 @@ private:
     QGraphicsLineItem *line;
     QMediaPlayer *backgroundMusic;
     QLabel *resultLabel;
-    QPropertyAnimation *shakeAnimation;
+    QPropertyAnimation *shakeAnimation = NULL;
     QLabel *ammoLabel;
     QTcpSocket *tcpSocket;
     QString ipAddress;

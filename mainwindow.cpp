@@ -237,34 +237,30 @@ void MainWindow::writeMessage(QString message) {
 }
 
 void MainWindow::shakeContent() {
-    QPoint originalPos = frameGeometry().topLeft();
+    if (!shakeAnimation) {
+        shakeAnimation = new QPropertyAnimation(view, "pos"); // Animate the QGraphicsView's position
+        shakeAnimation->setDuration(100); // Duration of the shake
+        shakeAnimation->setLoopCount(2); // Number of shakes
+    }
 
-    QParallelAnimationGroup *shakeGroup = new QParallelAnimationGroup(this);
+    // Store the original position of the QGraphicsView
+    QPoint originalPos = view->pos();
 
-    QPropertyAnimation *xAnim = new QPropertyAnimation(this, "geometry");
-    xAnim->setDuration(500);
-    xAnim->setKeyValueAt(0.1, QRect(originalPos + QPoint(10, 0), size()));
-    xAnim->setKeyValueAt(0.2, QRect(originalPos + QPoint(-10, 0), size()));
-    xAnim->setKeyValueAt(0.3, QRect(originalPos + QPoint(5, 0), size()));
-    xAnim->setKeyValueAt(0.4, QRect(originalPos + QPoint(-5, 0), size()));
-    xAnim->setEndValue(QRect(originalPos, size()));
+    // Define the shake animation keyframes
+    shakeAnimation->setKeyValueAt(0, originalPos);
+    shakeAnimation->setKeyValueAt(0.1, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.2, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.3, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.4, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.5, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.6, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.7, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(0.8, originalPos + QPoint(10, 0));
+    shakeAnimation->setKeyValueAt(0.9, originalPos + QPoint(-10, 0));
+    shakeAnimation->setKeyValueAt(1, originalPos);
 
-    QPropertyAnimation *yAnim = new QPropertyAnimation(this, "geometry");
-    yAnim->setDuration(500);
-    yAnim->setKeyValueAt(0.1, QRect(originalPos + QPoint(0, -5), size()));
-    yAnim->setKeyValueAt(0.2, QRect(originalPos + QPoint(0, 5), size()));
-    yAnim->setKeyValueAt(0.3, QRect(originalPos + QPoint(0, -3), size()));
-    yAnim->setKeyValueAt(0.4, QRect(originalPos + QPoint(0, 3), size()));
-    yAnim->setEndValue(QRect(originalPos, size()));
-
-    shakeGroup->addAnimation(xAnim);
-    shakeGroup->addAnimation(yAnim);
-
-    connect(shakeGroup, &QParallelAnimationGroup::finished, this, [this, originalPos]() {
-        move(originalPos);
-    });
-
-    shakeGroup->start(QAbstractAnimation::DeleteWhenStopped);
+    // Start the animation
+    shakeAnimation->start();
 }
 
 
