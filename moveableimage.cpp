@@ -33,6 +33,7 @@ void MovableImage::move() {
             if (mainWindow) {
                 mainWindow->shakeContent();
             }
+            mainWindow->writeMessage(QString("#meteortreffermoin"));
         }
 
         scene()->removeItem(this);

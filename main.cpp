@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         MainWindow w(ipAddress);
         w.showFullScreen();
         return a.exec();
-    } else {
+    }else {
         return 0;
     }
 }

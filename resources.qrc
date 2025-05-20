@@ -23,7 +23,6 @@
         <file>Empty.mp3</file>
         <file>Stars.png</file>
         <file>Star.png</file>
-        <file>Musik.mp3</file>
     </qresource>
     <qresource prefix="/">
         <file>File.qml</file>

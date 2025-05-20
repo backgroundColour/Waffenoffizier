@@ -9,6 +9,7 @@
 #include "QGraphicsView"
 #include "qaudiooutput.h"
 #include <QTcpSocket>
+#include "tcpclient.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -22,6 +23,8 @@ public:
     bool canShoot();
     void fireEvent();
     void writeMessage(const QString message);
+    void gameOver();
+    void useTcpSocket();
 
     int getCanFire() const;
     void setCanFire(int newCanFire);
@@ -41,9 +44,10 @@ private:
     QLabel *resultLabel;
     QPropertyAnimation *shakeAnimation = NULL;
     QLabel *ammoLabel;
-    QTcpSocket *tcpSocket;
     QString ipAddress;
     QList<QGraphicsPixmapItem*> stars;
+    QTcpSocket *tcpSocket;
+    //TcpClient* tcpClient;
 
     void spawnStar();
     void spawnImage();

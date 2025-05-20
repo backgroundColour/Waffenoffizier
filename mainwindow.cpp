@@ -21,14 +21,9 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
     tcpSocket = new QTcpSocket(this);
     connect(tcpSocket, &QTcpSocket::connected, this, [this]() {
         qDebug() << "Connected to server!";
-        QString message = "#role:WeaponsOfficer\r\n";
-        tcpSocket->write(message.toUtf8());
+        QString message = "#role:WeaponsOfficer";
+        writeMessage(message.toUtf8());
     });
-
-    player->setAudioOutput(audioOutput);
-    player->setSource(QUrl("qrc:/new/prefix1/Musik.mp3"));
-    audioOutput->setVolume(0.1);
-    player->play();
 
 
     QTimer *starSpawnTimer = new QTimer(this);
@@ -65,12 +60,14 @@ MainWindow::MainWindow(const QString &ipAddress, QWidget *parent)
             qDebug() << ammoValue;
             updateAmmoDisplay();
             ammo = ammoValue.toInt();
-        }else if(receivedMessage.contains("#weapon:")){
-            if(receivedMessage.contains("#weapon:true")){
+        }else if(receivedMessage.contains("#weapons:")){
+            if(receivedMessage.contains("#weapons:true")){
                 canFire = 1;
-            }else{
+            }else if(receivedMessage.contains("#weapons:false")){
                 canFire = 0;
             }
+        }else if(receivedMessage.contains("game:over")){
+            gameOver();
         }
     });
 
@@ -233,7 +230,24 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 }
 
 void MainWindow::writeMessage(QString message) {
-    tcpSocket->write(message.toUtf8());
+    tcpSocket->write(message.toUtf8() + "\n");
+}
+
+void MainWindow::gameOver()
+{
+    QWidget *overlay = new QWidget(nullptr); // no parent = top-level
+    overlay->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
+    overlay->setAttribute(Qt::WA_TranslucentBackground); // allow background transparency
+    overlay->setAttribute(Qt::WA_DeleteOnClose);         // auto-cleanup
+    overlay->setStyleSheet("background-color: rgba(0, 0, 0, 200);"); // ~80% opacity
+    overlay->showFullScreen();
+
+    // 3. Create and center the "GAME OVER" label
+    QLabel *label = new QLabel("GAME OVER", overlay);
+    label->setAlignment(Qt::AlignCenter);
+    label->setStyleSheet("color: red; font-size: 96px; font-weight: bold; background: transparent;");
+    label->setGeometry(0, 0, overlay->width(), overlay->height());
+    label->show();
 }
 
 void MainWindow::shakeContent() {
@@ -378,3 +392,4 @@ void MainWindow::showResult(const QString &resultType) {
         shakeContent();
     }
 }
+

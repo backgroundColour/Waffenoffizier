@@ -13,12 +13,14 @@ SOURCES += \
     ipdialog.cpp \
     main.cpp \
     mainwindow.cpp \
-    moveableimage.cpp
+    moveableimage.cpp \
+    tcpclient.cpp
 
 HEADERS += \
     ipdialog.h \
     mainwindow.h \
-    moveableimage.h
+    moveableimage.h \
+    tcpclient.h
 
 FORMS += \
     mainwindow.ui
